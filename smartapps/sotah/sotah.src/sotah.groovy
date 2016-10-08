@@ -23,10 +23,10 @@ def version() {	return "v0.2.14c.20160908" }
  *	 9/08/2016 >>> v0.2.14c.20160908 - Beta M2 - Added a few more system variables, $locationMode and $shmStatus
  *	 9/02/2016 >>> v0.2.14b.20160902 - Beta M2 - Fixed a problem with execution time measurements
  *	 9/02/2016 >>> v0.2.14a.20160902 - Beta M2 - Fixed a problem with decimal points on dashboard taps
- *	 9/02/2016 >>> v0.2.149.20160902 - Beta M2 - Improved exit point speed (removed unnecessary piston refreshes)
+ *	 9/02/2016 >>> v0.2.149.20160902 - Beta M2 - Improved exit point speed (removed unnecessary routine refreshes)
  *	 9/02/2016 >>> v0.2.148.20160902 - Beta M2 - Added instructions for removing dashboard taps. Thank you @dseg for the Tap idea.
  *	 9/02/2016 >>> v0.2.147.20160902 - Beta M2 - Minor fix with adding taps and API
- *	 9/02/2016 >>> v0.2.146.20160902 - Beta M2 - Introducing the dashboard taps - tap one to run its associated pistons
+ *	 9/02/2016 >>> v0.2.146.20160902 - Beta M2 - Introducing the dashboard taps - tap one to run its associated routines
  *	 8/21/2016 >>> v0.2.144.20160821 - Beta M2 - Fixed a bug in accepting an action restriction with a negative offset for the range end
  *	 8/21/2016 >>> v0.2.143.20160821 - Beta M2 - Minor bug fixes
  *	 8/20/2016 >>> v0.2.142.20160820 - Beta M2 - Made setVariable use long numbers to avoid range overflows
@@ -193,7 +193,7 @@ def pageDeleteVariable(params) {
 def pageRemove() {
 	dynamicPage(name: "pageRemove", title: "", install: false, uninstall: true) {
 		section() {
-			paragraph parent ? "CAUTION: You are about to remove the '${app.label}' piston. This action is irreversible. If you are sure you want to do this, please tap on the Remove button below." : "CAUTION: You are about to completely remove SOTAH and all of its pistons. This action is irreversible. If you are sure you want to do this, please tap on the Remove button below.", required: true, state: null
+			paragraph parent ? "CAUTION: You are about to remove the '${app.label}' routine. This action is irreversible. If you are sure you want to do this, please tap on the Remove button below." : "CAUTION: You are about to completely remove SOTAH and all of its routines. This action is irreversible. If you are sure you want to do this, please tap on the Remove button below.", required: true, state: null
 		}
 	}
 }
@@ -219,7 +219,7 @@ private pageMainSOTAH() {
 		}
 
 		section() {
-			app( name: "pistons", title: "Add a SOTAH piston...", appName: "SOTAH", namespace: "SOTAH", multiple: true, uninstall: false, image: "https://cdn.rawgit.com/ady624/CoRE/master/resources/images/icons/piston.png")
+			app( name: "pistons", title: "Add a SOTAH routine...", appName: "SOTAH", namespace: "SOTAH", multiple: true, uninstall: false, image: "https://cdn.rawgit.com/ady624/CoRE/master/resources/images/icons/piston.png")
 		}
 
 		section(title:"Application Info") {
@@ -281,14 +281,14 @@ def pageGeneralSettings(params) {
 			href "pageIntegrateIFTTT", title: "IFTTT", description: iftttConnected ? "Connected" : "Not configured", state: (iftttConnected ? "complete" : null), submitOnChange: true, required: false
 		}
 
-		section("Piston Recovery") {
-        	paragraph "Recovery allows pistons that have been left behind by missed ST events to recover and resume their work", required: false
+		section("Routine Recovery") {
+        	paragraph "Recovery allows routines that have been left behind by missed ST events to recover and resume their work", required: false
             input "recovery#1", "enum", options: ["Disabled", "Every 1 hour", "Every 3 hours"], title: "Stage 1 recovery", defaultValue: "Every 3 hours", required: false
             input "recovery#2", "enum", options: ["Disabled", "Every 2 hours", "Every 4 hours", "Every 6 hours", "Every 12 hours", "Every 1 day", "Every 2 days", "Every 3 days"], title: "Stage 2 recovery", defaultValue: "Every 1 day", required: false
             input "recoveryNotifications", "bool", title: "Send recovery notifications via ST UI", required: false
             input "recoveryPushNotifications", "bool", title: "Send recovery notifications via PUSH", required: false
-			href "pageRecoverAllPistons", title: "Recover all pistons", description: "Use this option when you have pistons displaying large 'past due' times in the dashboard.", required: false
-			href "pageRebuildAllPistons", title: "Rebuild all pistons", description: "Use this option if there is a problem with your pistons, including when the dashboard is no longer working (blank).", required: false
+			href "pageRecoverAllPistons", title: "Recover all routines", description: "Use this option when you have routines displaying large 'past due' times in the dashboard.", required: false
+			href "pageRebuildAllPistons", title: "Rebuild all routines", description: "Use this option if there is a problem with your routines, including when the dashboard is no longer working (blank).", required: false
         }
 
 		section("Security") {
@@ -337,10 +337,10 @@ def pageDashboardTap(params) {
 	dynamicPage(name: "pageDashboardTap", title: "Dashboard Tap", install: false, uninstall: false) {
         section("") {
         	input "tapName${tapId}", "string", title: "Name", description: "Enter a name for this tap", required: false, defaultValue: "Tap #${tapId}"
-        	input "tapPistons${tapId}", "enum", title: "Pistons", options: listPistons(), description: "Select the pistons to be executed when tapped", required: false, multiple: true
+        	input "tapPistons${tapId}", "enum", title: "Routines", options: listPistons(), description: "Select the routines to be executed when tapped", required: false, multiple: true
         }
         section("") {
-			paragraph "NOTE: To delete this dashboard tap, clear its name and list of pistons and then tap Done"
+			paragraph "NOTE: To delete this dashboard tap, clear its name and list of routines and then tap Done"
         }
     }
 }
@@ -372,9 +372,9 @@ def pageStatistics() {
         def running = apps.findAll{ it.getPistonEnabled() }.size()
 		section(title: "SOTAH") {
 			paragraph mem(), title: "Memory Usage", required: false
-			paragraph "${running}", title: "Running pistons", required: false
-			paragraph "${apps.size - running}", title: "Paused pistons", required: false
-			paragraph "${apps.size}", title: "Total pistons", required: false
+			paragraph "${running}", title: "Running routines", required: false
+			paragraph "${apps.size - running}", title: "Paused routines", required: false
+			paragraph "${apps.size}", title: "Total routines", required: false
 		}
 
 		updateChart("delay", null)
@@ -419,14 +419,14 @@ def pageStatistics() {
 
 		def i = 0
 		if (apps && apps.size()) {
-        	section("Pistons") {
+        	section("Routines") {
                 for (app in apps.sort{ it.label }) {
                     href "pagePistonStatistics", params: [pistonId: app.id], title: app.label ?: app.name, required: false
                 }
             }
 		} else {
 			section() {
-				paragraph "No pistons running", required: false
+				paragraph "No routines running", required: false
 			}
 		}
 	}
@@ -446,8 +446,8 @@ def pagePistonStatistics(params) {
             def conditionStats = app.getConditionStats()
             def subscribedDevices = app.getDeviceSubscriptionCount()
             stateSince = stateSince ? formatLocalTime(stateSince) : null
-            def description = "Piston mode: ${mode ? mode : "unknown"}"
-            description += "\nPiston version: $version"
+            def description = "Routine mode: ${mode ? mode : "unknown"}"
+            description += "\nRoutine version: $version"
             description += "\nSubscribed devices: $subscribedDevices"
             description += "\nCondition count: ${conditionStats.conditions}"
             description += "\nTrigger count: ${conditionStats.triggers}"
@@ -479,7 +479,7 @@ def pagePistonStatistics(params) {
             }
         } else {
         	section() {
-            	paragraph "Sorry, the piston you selected cannot be found", required: false
+            	paragraph "Sorry, the routine you selected cannot be found", required: false
             }
         }
     }
@@ -493,7 +493,7 @@ def pageChart(params) {
 	dynamicPage(name: "pageChart", title: "", install: false, uninstall: false) {
 		if (chartName) {
 			updateChart(chartName, null)
-			section(title: "$chartTitle (15 minute average, last 24h)\nData is calculated across all pistons") {
+			section(title: "$chartTitle (15 minute average, last 24h)\nData is calculated across all routines") {
 				def text = ""
 				def chart = state.charts[chartName]
 				def totalAvg = 0
@@ -567,19 +567,19 @@ def pageResetSecurityTokenConfirm() {
 }
 
 def pageRecoverAllPistons() {
-	return dynamicPage(name: "pageRecoverAllPistons", title: "Recover all pistons") {
+	return dynamicPage(name: "pageRecoverAllPistons", title: "Recover all routines") {
 		section() {
 			recoverPistons(true)
-			paragraph "Done. All your pistons have been sent a recovery request."
+			paragraph "Done. All your routines have been sent a recovery request."
 		}
 	}
 }
 
 def pageRebuildAllPistons() {
-	return dynamicPage(name: "pageRebuildAllPistons", title: "Rebuild all pistons") {
+	return dynamicPage(name: "pageRebuildAllPistons", title: "Rebuild all routines") {
 		section() {
 			rebuildPistons()
-			paragraph "Done. All your pistons have been sent a rebuild request."
+			paragraph "Done. All your routines have been sent a rebuild request."
 		}
 	}
 }
@@ -610,13 +610,13 @@ private pageMainSOTAHPiston() {
 			} else pistonModes.add("Follow-Up")
 			//input "enabled", "bool", description: enabled ? "Current state: ${currentState == null ? "unknown" : currentState}\nCPU: ${cpu()}\t\tMEM: ${mem(false)}" : "", title: "Status: ${enabled ? "RUNNING" : "PAUSED"}", submitOnChange: true, required: false, state: "complete", defaultValue: true
 			href "pageToggleEnabled", description: enabled ? "Current state: ${currentState == null ? "unknown" : currentState}\nCPU: ${cpu()}\t\tMEM: ${mem(false)}" : "", title: "Status: ${enabled ? "RUNNING" : "PAUSED"}", submitOnChange: true, required: false, state: "complete"
-			input "mode", "enum", title: "Piston Mode", required: true, state: null, options: pistonModes, defaultValue: "Basic", submitOnChange: true
+			input "mode", "enum", title: "Routine Mode", required: true, state: null, options: pistonModes, defaultValue: "Basic", submitOnChange: true
 			switch (state.config.app.mode) {
 				case "Latching":
-				paragraph "A latching Piston - also known as a bi-stable Piston - uses one set of conditions to achieve a 'true' state and a second set of conditions to revert back to its 'false' state"
+				paragraph "A latching Routine - also known as a bi-stable Routine - uses one set of conditions to achieve a 'true' state and a second set of conditions to revert back to its 'false' state"
 				break
 				case "Else-If":
-				paragraph "An Else-If Piston executes a set of actions if an initial condition set evaluates to true, otherwise executes a second set of actions if a second condition set evaluates to true"
+				paragraph "An Else-If Routine executes a set of actions if an initial condition set evaluates to true, otherwise executes a second set of actions if a second condition set evaluates to true"
 				break
 			}
 		}
@@ -687,7 +687,7 @@ private pageMainSOTAHPiston() {
 		}
 
 		def hasRestrictions = settings["restrictionMode"] || settings["restrictionAlarm"] || settings["restrictionVariable"] || settings["restrictionDOW"] || settings["restrictionTimeFrom"] || settings["restrictionSwitchOn"] || settings["restrictionSwitchOff"]
-		section(title: "Piston Restrictions", hideable: true, hidden: !hasRestrictions) {
+		section(title: "Routine Restrictions", hideable: true, hidden: !hasRestrictions) {
 			input "restrictionMode", "mode", title: "Only execute in these modes", description: "Any location mode", required: false, multiple: true
 			input "restrictionAlarm", "enum", options: getAlarmSystemStatusOptions(), title: "Only execute during these alarm states", description: "Any alarm state", required: false, multiple: true
 			input "restrictionVariable", "enum", options: listVariables(true), title: "Only execute when variable matches", description: "Tap to choose a variable", required: false, multiple: false, submitOnChange: true
@@ -741,11 +741,11 @@ private pageMainSOTAHPiston() {
 				input "log#error", "bool", title: "Log error messages", defaultValue: true
 			}
 			input "disableCO", "bool", title: "Disable command optimizations", defaultValue: false
-			href "pageRebuild", title: "Rebuild this SOTAH piston", description: "Only use this option if your piston has been corrupted."
+			href "pageRebuild", title: "Rebuild this SOTAH routine", description: "Only use this option if your routine has been corrupted."
 		}
         
-		section("Rebuild or remove piston") {
-			href "pageRemove", title: "", description: "Remove this SOTAH piston"
+		section("Rebuild or remove routine") {
+			href "pageRemove", title: "", description: "Remove this SOTAH routine"
 		}
 	}
 }
@@ -1300,10 +1300,10 @@ def pageConditionVsTrigger() {
 	state.run = "config"
 	dynamicPage(name: "pageConditionVsTrigger", title: "Conditions versus Trigers", uninstall: false, install: false) {
 		section() {
-			paragraph "All Pistons are event-driven. This means that an action is taken whenever something happens while the Piston is watching over. To do so, the Piston subscribes to events from all the devices you use while building your 'If...' and - in case of latching Pistons - your 'But if...' statements as well. Since a Piston subscribes to multiple device events, it is evaluated every time such an event occurs. Depending on your conditions, a device event may not necessarily make any change to the evaluated state of the Piston (think OR), but the Piston is evaluated either way, making it possible to execute actions even if the Piston's status didn't change. More about this under the 'Then...' or 'Else...' sections of the Piston."
-			paragraph "Events tell Pistons something has changed. Depending on the logic you are trying to implement, sometimes you need to check that the state of a device is within a certain range, and sometimes you need to react to a device state reaching a certain value, list or range.\n\nLet's start with an example. Say you have a temperature sensor and you want to monitor its temperature. You want to be alerted if the temperature is over 100°F. Now, assume the temperature starts at 99°F and increases steadily at a rate of one degree Fahrenheit per minute.", title: "State vs. State Change"
-			paragraph "If you use a condition, the Piston will be evaluated every one minute, as the temperature changes. The first evaluation will result in a false condition as the temperature reaches 100°F. Remember, our condition is for the temperature to be OVER 100°F. The next minute, your temperature is reported at 101°F which will cause the Piston to evaluate true this time. Your 'Then...' actions will now have a chance at execution. The next minute, as the temperature reaches 102°F, the Piston will again evaluate true and proceed to executing your 'Then...' actions. This will happen for as long as the temperature remains over 100°F and will possibly execute your actions every time a new temperature is read that matches that condition. You could use this to pass the information along to another service (think IFTTT) or display it on some sort of screen. But not for turning on a thermostat - you don't neet to turn the thermostat on every one minute, it's very likely already on from your last execution.", title: "Using a Condition"
-			paragraph "If you use a trigger, the Piston will now be on the lookout for a certain state change that 'triggers' our evaluation to become true. You will no longer look for a temperature over 100°F, but instead you will be looking for when the temperature exceeds 100°F. This means your actions will only be executed when the temperature actually transitioned from below or equal to 100°F to over 100°F. This means your actions will only execute once and for the Piston to fire your actions again, the temperature would have to first drop at or below 100°F and then raise again to exceed your set threshold of 100°F. Now, this you could use to control a thermostat, right?", title: "Using a Trigger"
+			paragraph "All Routines are event-driven. This means that an action is taken whenever something happens while the Routine is watching over. To do so, the Routine subscribes to events from all the devices you use while building your 'If...' and - in case of latching Routines - your 'But if...' statements as well. Since a Routine subscribes to multiple device events, it is evaluated every time such an event occurs. Depending on your conditions, a device event may not necessarily make any change to the evaluated state of the Routine (think OR), but the Routine is evaluated either way, making it possible to execute actions even if the Routine's status didn't change. More about this under the 'Then...' or 'Else...' sections of the Routine."
+			paragraph "Events tell Routines something has changed. Depending on the logic you are trying to implement, sometimes you need to check that the state of a device is within a certain range, and sometimes you need to react to a device state reaching a certain value, list or range.\n\nLet's start with an example. Say you have a temperature sensor and you want to monitor its temperature. You want to be alerted if the temperature is over 100°F. Now, assume the temperature starts at 99°F and increases steadily at a rate of one degree Fahrenheit per minute.", title: "State vs. State Change"
+			paragraph "If you use a condition, the Routine will be evaluated every one minute, as the temperature changes. The first evaluation will result in a false condition as the temperature reaches 100°F. Remember, our condition is for the temperature to be OVER 100°F. The next minute, your temperature is reported at 101°F which will cause the Routine to evaluate true this time. Your 'Then...' actions will now have a chance at execution. The next minute, as the temperature reaches 102°F, the Routine will again evaluate true and proceed to executing your 'Then...' actions. This will happen for as long as the temperature remains over 100°F and will possibly execute your actions every time a new temperature is read that matches that condition. You could use this to pass the information along to another service (think IFTTT) or display it on some sort of screen. But not for turning on a thermostat - you don't neet to turn the thermostat on every one minute, it's very likely already on from your last execution.", title: "Using a Condition"
+			paragraph "If you use a trigger, the Routine will now be on the lookout for a certain state change that 'triggers' our evaluation to become true. You will no longer look for a temperature over 100°F, but instead you will be looking for when the temperature exceeds 100°F. This means your actions will only be executed when the temperature actually transitioned from below or equal to 100°F to over 100°F. This means your actions will only execute once and for the Routine to fire your actions again, the temperature would have to first drop at or below 100°F and then raise again to exceed your set threshold of 100°F. Now, this you could use to control a thermostat, right?", title: "Using a Trigger"
 		}
 	}
 }
@@ -1637,7 +1637,7 @@ def pageAction(params) {
 
 			if (actionUsed) {
 				section(title: "Action Restrictions") {
-					input "actRStateChange$id", "bool", title: action.pid > 0 ? "Only execute on condition state change" : "Only execute on piston state change", required: false
+					input "actRStateChange$id", "bool", title: action.pid > 0 ? "Only execute on condition state change" : "Only execute on routine state change", required: false
 					input "actRMode$id", "mode", title: "Only execute in these modes", description: "Any location mode", required: false, multiple: true
 					input "actRAlarm$id", "enum", options: getAlarmSystemStatusOptions(), title: "Only execute during these alarm states", description: "Any alarm state", required: false, multiple: true
 					input "actRVariable$id", "enum", options: listVariables(true), title: "Only execute when variable matches", description: "Tap to choose a variable", required: false, multiple: false, submitOnChange: true
@@ -1667,14 +1667,14 @@ def pageAction(params) {
 					input "actRSwitchOn$id", "capability.switch", title: "Only execute when these switches are all on", description: "Always", required: false, multiple: true
 					input "actRSwitchOff$id", "capability.switch", title: "Only execute when these switches are all off", description: "Always", required: false, multiple: true
 					if (action.pid > 0) {
-						input "actRState$id", "enum", options:["true", "false"], defaultValue: action.rs == false ? "false" : "true", title: action.pid > 0 ? "Only execute when condition state is" : "Only execute on piston state change", required: true
+						input "actRState$id", "enum", options:["true", "false"], defaultValue: action.rs == false ? "false" : "true", title: action.pid > 0 ? "Only execute when condition state is" : "Only execute on routine state change", required: true
 					}
 				}
 
 				section(title: "Advanced options") {
-					paragraph "When an action schedules tasks for a certain device or devices, these new tasks may cause a conflict with pending future scheduled tasks for the same device or devices. The task override scope defines how these conflicts are handled. Depending on your choice, the following pending tasks are cancelled:\n ● None - no pending task is cancelled\n ● Action - only tasks scheduled by the same action are cancelled\n ● Local - only local tasks (scheduled by the same piston) are cancelled (default)\n ● Global - all global tasks (scheduled by any piston in the SOTAH) are cancelled"
+					paragraph "When an action schedules tasks for a certain device or devices, these new tasks may cause a conflict with pending future scheduled tasks for the same device or devices. The task override scope defines how these conflicts are handled. Depending on your choice, the following pending tasks are cancelled:\n ● None - no pending task is cancelled\n ● Action - only tasks scheduled by the same action are cancelled\n ● Local - only local tasks (scheduled by the same routine) are cancelled (default)\n ● Global - all global tasks (scheduled by any routine in the SOTAH) are cancelled"
 					input "actTOS$id", "enum", title: "Task override scope", options:["None", "Action", "Local", "Global"], defaultValue: "Local", required: true
-					input "actTCP$id", "enum", title: "Task cancellation policy", options:["None", "Cancel on piston state change"], defaultValue: "None", required: true
+					input "actTCP$id", "enum", title: "Task cancellation policy", options:["None", "Cancel on routine state change"], defaultValue: "None", required: true
 				}
 
 				if (id) {
@@ -1808,10 +1808,10 @@ def pageSimulate() {
 	state.run = "config"
 	dynamicPage(name: "pageSimulate", title: "", uninstall: false, install: false) {
 		section("") {
-			paragraph "Preparing to simulate piston..."
-			paragraph "Current piston state is: ${state.currentState}"
+			paragraph "Preparing to simulate routine..."
+			paragraph "Current routine state is: ${state.currentState}"
             if (!state.config.app.enabled) {
-				paragraph "Piston is currently PAUSED", state: null, required: true
+				paragraph "Routine is currently PAUSED", state: null, required: true
             }
 		}
 		state.sim = [ evals: [], cmds: [] ]
@@ -1836,7 +1836,7 @@ def pageSimulate() {
         
 		section("") {
 			paragraph "Simulation ended in ${perf}ms.", state: "complete"
-			paragraph "New piston state is: ${state.currentState}"
+			paragraph "New routine state is: ${state.currentState}"
 			if (error) {
 				paragraph error, required: true, state: null
 			}
@@ -1888,7 +1888,7 @@ def pageSimulate() {
 def pageRebuild() {
 	dynamicPage(name: "pageRebuild", title: "", uninstall: false, install: false) {
 		section("") {
-			paragraph "Rebuilding piston..."
+			paragraph "Rebuilding routine..."
             rebuildPiston()
             configApp()
             state.run = "config"
@@ -1902,7 +1902,7 @@ def pageToggleEnabled() {
 	if (state.app) state.app.enabled = !!state.config.app.enabled
 		dynamicPage(name: "pageToggleEnabled", title: "", uninstall: false, install: false) {
 		section() {
-			paragraph "The piston is now ${state.config.app.enabled ? "running" : "paused"}."
+			paragraph "The routine is now ${state.config.app.enabled ? "running" : "paused"}."
 		}
 	}
 }
@@ -2553,7 +2553,7 @@ def childUninstalled() {
 }
 
 private recoverPistons(recoverAll = false, excludeAppId = null) {
-	if (recoverAll) debug "Piston recovery initiated...", null, "trace"
+	if (recoverAll) debug "Routine recovery initiated...", null, "trace"
     int count = 0
 	def recovery = atomicState.recovery
 	if (!(recovery instanceof Map)) recovery = [:]
@@ -2583,19 +2583,19 @@ private recoverPistons(recoverAll = false, excludeAppId = null) {
             subscribeToRecovery(app.id, null)
         }
     }
-	if (recoverAll || (count > 0)) debug "Piston recovery finished, $count piston${count == 1 ? " was" : "s were"} recovered.", null, "trace"
+	if (recoverAll || (count > 0)) debug "Routine recovery finished, $count routine${count == 1 ? " was" : "s were"} recovered.", null, "trace"
     if (recoverAll) refreshPistons(false)
     return true
 }
 
 def rebuildPistons() {
-   	debug "Initializing piston rebuild...", null, trace
+   	debug "Initializing routine rebuild...", null, trace
     for(app in getChildApps()) {
-	   	debug "Rebuilding piston ${app.label ?: app.name}", null, trace
+	   	debug "Rebuilding routine ${app.label ?: app.name}", null, trace
 		sendLocationEvent(name: "SOTAH Recovery [${app.id}]", value: "", displayed: true, linkText: "SOTAH/${app.label} Recovery", isStateChange: true, data: [rebuild: true])
 		//app.rebuildPiston(true)
     }
-   	debug "Done rebuilding pistons.", null, trace
+   	debug "Done rebuilding routines.", null, trace
 }
 
 
@@ -2692,12 +2692,12 @@ def api_pause() {
 def api_execute() {
 	def data = request?.JSON
 	def pistonName = params?.pistonName ?: data?.pistonName
-    def result = "Sorry, piston $pistonName could not be found."
-	def d = debug("Received an API execute request for piston '$pistonName' with data: $data")        
+    def result = "Sorry, routine $pistonName could not be found."
+	def d = debug("Received an API execute request for routine '$pistonName' with data: $data")        
 	if (pistonName) {
     	data.remove "pistonName"
     	result = execute(pistonName, data)
-        result = "Piston $pistonName is now being executed."
+        result = "Routine $pistonName is now being executed."
     }
 	render contentType: "text/html", data: "<!DOCTYPE html><html lang=\"en\">$result<body></body></html>"
 }
@@ -2710,7 +2710,7 @@ def api_tap() {
     if (tap && tap.p) {
     	for(pistonName in tap.p) {
 	    	execute(pistonName)
-			result += "Piston $pistonName is now being executed.<br/>"
+			result += "Routine $pistonName is now being executed.<br/>"
 		}
     }
 	def d = debug("Received an API tap request for tapID $tapId")
@@ -2802,7 +2802,7 @@ def listPistons(excludeApp = null, type = null) {
 
 def execute(pistonName, data = null) {
 	if (parent) {
-		//if a child executes a piston, we need to save the variables to the atomic state to make them show in the new piston execution
+		//if a child executes a routine, we need to save the variables to the atomic state to make them show in the new routine execution
 		//def store = state.store
 		//state.store = store
 		//atomicState.store = store
@@ -2888,7 +2888,7 @@ def subscribeToRecovery(appId, recoveryTime) {
         if (recoveryTime) debug "Subscribing app $appId to recovery in about ${Math.round((recoveryTime - now() + 30000)/1000)} seconds"
         recovery[appId] = recoveryTime
         atomicState.recovery = recovery
-        //kick start all other dead pistons, use location events...
+        //kick start all other dead routines, use location events...
         if (recoveryTime != null) recoverPistons(false, appId)
     }
 }
@@ -2913,7 +2913,7 @@ def generatePistonName() {
 	def apps = getChildApps()
 	def i = 1
 	while (true) {
-		def name = i == 5 ? "Mambo No. 5" : "SOTAH Piston #$i"
+		def name = i == 5 ? "Mambo No. 5" : "SOTAH Routine #$i"
 		def found = false
 		for (app in apps) {
 			if (app.label == name) {
@@ -2930,7 +2930,7 @@ def generatePistonName() {
 }
 
 def refreshPistons(event = true) {
-	if (event) sendLocationEvent([name: "SOTAH", value: "refresh", isStateChange: true, linkText: "SOTAH Refresh", descriptionText: "SOTAH has an updated list of pistons", data: [pistons: listPistons()]])
+	if (event) sendLocationEvent([name: "SOTAH", value: "refresh", isStateChange: true, linkText: "SOTAH Refresh", descriptionText: "SOTAH has an updated list of routines", data: [pistons: listPistons()]])
     def pistons = [:]
 	for(app in getChildApps()) {
     	pistons[app.id] = app.getSummary()
@@ -3255,8 +3255,8 @@ private updateCondition(condition) {
 			condition.attr = "alarmSystemStatus"
 			condition.dev.push "location"
 			break
-		case "SOTAH Piston":
-		case "Piston":
+		case "SOTAH Routine":
+		case "Routine":
 			condition.attr = "piston"
 			condition.dev.push "location"
 			break
@@ -3754,7 +3754,7 @@ def deviceHandler(evt) {
 	processTasks()
 	exitPoint(now() - perf)
 	perf = now() - perf
-	debug "Piston done in ${perf}ms", -1, "trace"
+	debug "Routine done in ${perf}ms", -1, "trace"
 }
 
 def latchingDeviceHandler(evt) {
@@ -3769,7 +3769,7 @@ def latchingDeviceHandler(evt) {
 	processTasks()
 	exitPoint(now() - perf)
 	perf = now() - perf
-	debug "Piston done in ${perf}ms", -1, "trace"
+	debug "Routine done in ${perf}ms", -1, "trace"
 }
 
 def bothDeviceHandler(evt) {
@@ -3784,7 +3784,7 @@ def bothDeviceHandler(evt) {
 	processTasks()
 	exitPoint(now() - perf)
 	perf = now() - perf
-	debug "Piston done in ${perf}ms", -1, "trace"
+	debug "Routine done in ${perf}ms", -1, "trace"
 }
 
 def timeHandler() {
@@ -3796,7 +3796,7 @@ def timeHandler() {
 	processTasks()
 	exitPoint(now() - perf)
 	perf = now() - perf
-	debug "Piston done in ${perf}ms", -1, "trace"
+	debug "Routine done in ${perf}ms", -1, "trace"
 }
 
 def recoveryHandler(evt = null, showWarning = true) {
@@ -3824,7 +3824,7 @@ def recoveryHandler(evt = null, showWarning = true) {
 	processTasks()
 	exitPoint(now() - perf)
 	perf = now() - perf
-	debug "Piston done in ${perf}ms", -1, "trace"
+	debug "Routine done in ${perf}ms", -1, "trace"
 }
 
 def executeHandler(data = null) {
@@ -3842,7 +3842,7 @@ def executeHandler(data = null) {
 	processTasks()
 	exitPoint(now() - perf)
 	perf = now() - perf
-	debug "Piston done in ${perf}ms", -1, "trace"
+	debug "Routine done in ${perf}ms", -1, "trace"
 	return state.currentState
 }
 
@@ -3917,7 +3917,7 @@ private exitPoint(milliseconds) {
 
 	if (lastEvent && lastEvent.event) {
 		if (lastEvent.event.name != "piston") {
-			sendLocationEvent(name: "piston", value: "${app.label}", displayed: true, linkText: "SOTAH/${app.label}", isStateChange: true, descriptionText: "${appData.mode} piston executed in ${milliseconds}ms", data: [app: "SOTAH", state: state.currentState, executionTime: milliseconds, event: lastEvent])
+			sendLocationEvent(name: "piston", value: "${app.label}", displayed: true, linkText: "SOTAH/${app.label}", isStateChange: true, descriptionText: "${appData.mode} routine executed in ${milliseconds}ms", data: [app: "SOTAH", state: state.currentState, executionTime: milliseconds, event: lastEvent])
 		}
 	}
 
@@ -4009,7 +4009,7 @@ private broadcastEvent(evt, primary, secondary) {
 				//broadcast to primary IF block
 				def result1 = null
 				def result2 = null
-				//some piston modes require evaluation of secondary conditions regardless of eligibility - we use force then
+				//some routine modes require evaluation of secondary conditions regardless of eligibility - we use force then
 				def force = false
 				def mode = app.mode
 				switch (mode) {
@@ -4028,7 +4028,7 @@ private broadcastEvent(evt, primary, secondary) {
                         result2 = false
                         break
 				}
-				//override eligibility concerns when dealing with Follow-Up pistons, or when dealing with "execute" and "simulate" events
+				//override eligibility concerns when dealing with Follow-Up routines, or when dealing with "execute" and "simulate" events
 				force = force || app.mode == "Follow-Up" || (evt && evt.name in ["execute", "simulate", "time"])
 				if (primary) {
 					result1 = !!evaluateConditionSet(evt, true, force)
@@ -4073,7 +4073,7 @@ private broadcastEvent(evt, primary, secondary) {
 								//flip on
 								currentState = true
 								currentStateSince = now()
-								stateMsg = "♦ Latching Piston changed state to true ♦"
+								stateMsg = "♦ Latching Routine changed state to true ♦"
 							}
 						}
 						if (initialState in [null, true]) {
@@ -4081,14 +4081,14 @@ private broadcastEvent(evt, primary, secondary) {
 								//flip off
 								currentState = false
 								currentStateSince = now()
-								stateMsg = "♦ Latching Piston changed state to false ♦"
+								stateMsg = "♦ Latching Routine changed state to false ♦"
 							}
 						}
 						break
                     case "Do":
                     	currentState = false
                     	currentStateSince = now()
-	                    stateMsg = "♦ $mode Piston changed state to $result1 ♦"
+	                    stateMsg = "♦ $mode Routine changed state to $result1 ♦"
 						break
 					case "Basic":
 					case "Simple":
@@ -4097,7 +4097,7 @@ private broadcastEvent(evt, primary, secondary) {
 						if (initialState != result1) {
 							currentState = result1
 							currentStateSince = now()
-							stateMsg = "♦ $mode Piston changed state to $result1 ♦"
+							stateMsg = "♦ $mode Routine changed state to $result1 ♦"
 						}
 						break
 					case "And-If":
@@ -4105,7 +4105,7 @@ private broadcastEvent(evt, primary, secondary) {
 						if (initialState != newState) {
 							currentState = newState
 							currentStateSince = now()
-							stateMsg = "♦ And-If Piston changed state to $newState ♦"
+							stateMsg = "♦ And-If Routine changed state to $newState ♦"
 						}
 						break
 					case "Or-If":
@@ -4113,7 +4113,7 @@ private broadcastEvent(evt, primary, secondary) {
 						if (initialState != newState) {
 							currentState = newState
 							currentStateSince = now()
-							stateMsg = "♦ Or-If Piston changed state to $newState ♦"
+							stateMsg = "♦ Or-If Routine changed state to $newState ♦"
 						}
 						break
 					case "Then-If":
@@ -4121,7 +4121,7 @@ private broadcastEvent(evt, primary, secondary) {
 						if (initialState != newState) {
 							currentState = newState
 							currentStateSince = now()
-							stateMsg = "♦ Then-If Piston changed state to $newState ♦"
+							stateMsg = "♦ Then-If Routine changed state to $newState ♦"
 						}
 						break
 					case "Else-If":
@@ -4129,7 +4129,7 @@ private broadcastEvent(evt, primary, secondary) {
 						if (initialState != newState) {
 							currentState = newState
 							currentStateSince = now()
-							stateMsg = "♦ Else-If Piston changed state to $newState ♦"
+							stateMsg = "♦ Else-If Routine changed state to $newState ♦"
 						}
 						break
 				}
@@ -4169,7 +4169,7 @@ private broadcastEvent(evt, primary, secondary) {
 			debug "ERROR: An error occurred while processing event $evt: $e", null, "error"
 		}
 	} else {
-    	def msg = "Piston evaluation was prevented by ${restriction}." 
+    	def msg = "Routine evaluation was prevented by ${restriction}." 
         if (state.sim) state.sim.evals.push(msg)
 		debug msg, null, "trace"
 	}
@@ -4435,8 +4435,8 @@ private evaluateDeviceCondition(condition, evt) {
 			virtualCurrentValue = getAlarmSystemStatus()
 			attribute = "alarmSystemStatus"
 			break
-		case "SOTAH Piston":
-		case "Piston":
+		case "SOTAH Routine":
+		case "Routine":
 			devices = [location]
 			virtualCurrentValue = evt ? evt.value : "<<<unknown piston>>>"
 			attribute = "piston"
@@ -6665,7 +6665,7 @@ private processTasks() {
 private cancelTasks(state) {
 	def tasks = atomicState.tasks
 	tasks = tasks ? tasks : [:]
-	//debug "Resuming tasks on piston state change, resumable states are $resumableStates", null, "trace"
+	//debug "Resuming tasks on routine state change, resumable states are $resumableStates", null, "trace"
 	while (true) {
 		def item = tasks.find{ (it.value.type == "cmd") && (it.value.data && it.value.data.c)}
 		if (item) {
@@ -6681,7 +6681,7 @@ private resumeTasks(state) {
 	def tasks = atomicState.tasks
 	tasks = tasks ? tasks : [:]
 	def resumableStates = ["a", (state ? "t" : "f")]
-	//debug "Resuming tasks on piston state change, resumable states are $resumableStates", null, "trace"
+	//debug "Resuming tasks on routine state change, resumable states are $resumableStates", null, "trace"
 	def time = now()
 	def list = tasks.findAll{ (it.value.type == "cmd") && (it.value.data && (it.value.data.w in resumableStates))}
 	//todo: support for multiple wait for state commands during same action
@@ -7296,7 +7296,7 @@ private task_vcmd_queueAskAlexaMessage(device, action, task, suffix = "") {
 	}
 	def message = formatMessage(params[0].d)
     def unit = formatMessage(params[1].d)
-    sendLocationEvent name: "AskAlexaMsgQueue", value: "SOTAH Piston: " + (app.label ?: app.name), isStateChange: true, descriptionText: message, unit: unit
+    sendLocationEvent name: "AskAlexaMsgQueue", value: "SOTAH Routine: " + (app.label ?: app.name), isStateChange: true, descriptionText: message, unit: unit
 }
 
 private task_vcmd_deleteAskAlexaMessages(device, action, task, suffix = "") {
@@ -7305,7 +7305,7 @@ private task_vcmd_deleteAskAlexaMessages(device, action, task, suffix = "") {
 		return false
 	}
     def unit = formatMessage(params[0].d)
-    sendLocationEvent name: "AskAlexaMsgQueueDelete", value: "SOTAH Piston: " + (app.label ?: app.name), isStateChange: true, unit: unit
+    sendLocationEvent name: "AskAlexaMsgQueueDelete", value: "SOTAH Routine: " + (app.label ?: app.name), isStateChange: true, unit: unit
 }
 
 private task_vcmd_executeRoutine(devices, action, task, suffix = "") {
@@ -8136,7 +8136,7 @@ def getPistonConditionDescription(condition) {
 
 def getSummary() {
 	if (!state.app) {
-    	log.warn "Piston ${app.label} is not complete, please open it and save it"
+    	log.warn "Routine ${app.label} is not complete, please open it and save it"
     }
 	def stateApp = (state.app ?: state.config.app)
 	return [
@@ -8172,7 +8172,7 @@ def resume() {
 	state.run = "app"
 	initializeSOTAHPistonStore()
 	if (state.app.mode != "Follow-Up") {
-		//follow-up pistons don't subscribe to anything
+		//follow-up routines don't subscribe to anything
 		subscribeToAll(state.app)
 	}
 	processTasks()
@@ -8876,7 +8876,7 @@ def rebuildPiston(update = false) {
     rebuildConditions()
     rebuildActions()
     if (update) {
-	    debug "Finished rebuilding piston, updating SmartApp...", null, "trace"
+	    debug "Finished rebuilding routine, updating SmartApp...", null, "trace"
 	    updated()
     }
 }
@@ -8982,7 +8982,7 @@ private _cleanUpCondition(condition, deleteGroups) {
 	if (condition.id > 0) {
 		if (condition.children == null) {
 			//if regular condition
-			if (!(condition.cap in ["Ask Alexa Macro", "IFTTT", "Piston", "SOTAH Piston", "Mode", "Location Mode", "Smart Home Monitor", "Date & Time", "Time", "Routine", "Variable"]) && settings["condDevices${condition.id}"] == null) {
+			if (!(condition.cap in ["Ask Alexa Macro", "IFTTT", "Routine", "SOTAH Routine", "Mode", "Location Mode", "Smart Home Monitor", "Date & Time", "Time", "Routine", "Variable"]) && settings["condDevices${condition.id}"] == null) {
 				deleteCondition(condition.id);
 				return true
 			//} else {
@@ -10068,7 +10068,7 @@ private capabilities() {
 		[ name: "configure",						display: "Configure",						commands: ["configure"],															multiple: true,			devices: "configurable devices",	],
 		[ name: "consumable",						display: "Consumable",						attribute: "consumable",				commands: ["setConsumableStatus"],													multiple: true,			devices: "consumables",	],
 		[ name: "contactSensor",					display: "Contact Sensor",					attribute: "contact",					multiple: true,			devices: "contact sensors",	],
-		[ name: "piston",							display: "SOTAH Piston",						attribute: "piston",					commands: ["executePiston"],														multiple: true,			virtualDevice: location,	virtualDeviceName: "Piston"	],
+		[ name: "piston",							display: "SOTAH Routine",						attribute: "piston",					commands: ["executePiston"],														multiple: true,			virtualDevice: location,	virtualDeviceName: "Routine"	],
 		[ name: "dateAndTime",						display: "Date & Time",						attribute: "time",						commands: null, /* wish we could control time */									multiple: true,			, virtualDevice: [id: "time", name: "time"],		virtualDeviceName: "Date & Time"	],
 		[ name: "switchLevel",						display: "Dimmable Light",					attribute: "level",						commands: ["setLevel"],																multiple: true,			devices: "dimmable lights",	],
 		[ name: "switchLevel",						display: "Dimmer",							attribute: "level",						commands: ["setLevel"],																multiple: true,			devices: "dimmers",			],
@@ -10090,7 +10090,7 @@ private capabilities() {
 		[ name: "pHMeasurement",					display: "pH Measurement",					attribute: "pH",						multiple: true,			devices: "pH sensors",	],
 		[ name: "occupancy",						display: "Occupancy",						attribute: "occupancy",					multiple: true,			devices: "occupancy detectors",	],
 		[ name: "switch",							display: "Outlet",							attribute: "switch",					commands: ["on", "off"],															multiple: true,			devices: "outlets",			],
-		[ name: "piston",							display: "Piston",							attribute: "piston",					commands: ["executePiston"],														multiple: true,			virtualDevice: location,	virtualDeviceName: "Piston"	],
+		[ name: "piston",							display: "Routine",							attribute: "piston",					commands: ["executePiston"],														multiple: true,			virtualDevice: location,	virtualDeviceName: "Piston"	],
 		[ name: "polling",							display: "Polling",							commands: ["poll"],																	multiple: true,			devices: "pollable devices",	],
 		[ name: "powerMeter",						display: "Power Meter",						attribute: "power",						multiple: true,			devices: "power meters",	],
 		[ name: "power",							display: "Power",							attribute: "powerSource",				multiple: true,			devices: "powered devices",	],
@@ -10138,8 +10138,8 @@ private capabilities() {
 private commands() {
 	def tempUnit = "°" + location.temperatureScale
 	return [
-		[ name: "locationMode.setMode",						category: "Location",					group: "Control location mode, Smart Home Monitor, routines, pistons, variables, and more...",		display: "Set location mode",			],
-		[ name: "smartHomeMonitor.setAlarmSystemStatus",	category: "Location",					group: "Control location mode, Smart Home Monitor, routines, pistons, variables, and more...",		display: "Set Smart Home Monitor status",],
+		[ name: "locationMode.setMode",						category: "Location",					group: "Control location mode, Smart Home Monitor, routines, variables, and more...",		display: "Set location mode",			],
+		[ name: "smartHomeMonitor.setAlarmSystemStatus",	category: "Location",					group: "Control location mode, Smart Home Monitor, routines, variables, and more...",		display: "Set Smart Home Monitor status",],
 		[ name: "on",										category: "Convenience",				group: "Control [devices]",			display: "Turn on", 						attribute: "switch",	value: "on",	],
 		[ name: "on1",										display: "Turn on #1", 						attribute: "switch1",	value: "on",	],
 		[ name: "on2",										display: "Turn on #2", 						attribute: "switch2",	value: "on",	],
